@@ -46,7 +46,7 @@ def handle_userinput(question):
     Question: {question}
     Based on the context i will provide of pdf.
     
-    Provide the evaluation in this format:
+    Provide the evaluation in this format but its json format:
     1. **marks**: 
     2. **Feedback**:"""
 

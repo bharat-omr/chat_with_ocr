@@ -104,7 +104,7 @@ def ask_question():
 
     question = data["question"]
     answer = handle_user_input(question)
-
+    print(answer)
     return jsonify({"answer": answer})
 
 if __name__ == '__main__':
