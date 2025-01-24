@@ -47,7 +47,7 @@ def handle_userinput(question):
     Based on the context i will provide of pdf.
     
     Provide the evaluation in this format but its json format:
-    1. **marks**: 
+    1. **marks**: (marks are mention in context)
     2. **Feedback**:"""
 
     # Now pass the prompt into the conversation chain

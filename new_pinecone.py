@@ -92,7 +92,7 @@ def handle_user_input(user_answer, max_marks):
     - Full marks for a complete and accurate answer.
     - Deduct marks proportionally for incomplete or partially correct answers.
     
-    evaluation strictly in this format:
+    evaluation strictly in this format in json format:
     1. **Marks**: [Insert marks out of {max_marks}]
     2. **Feedback**: [Provide a 3-4 sentence evaluation of the answer.]
     """
