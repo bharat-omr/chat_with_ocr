@@ -5,10 +5,12 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain.vectorstores import Pinecone
 from langchain.memory import ConversationBufferMemory
+from langchain_pinecone import PineconeVectorStore
 from langchain.chains import ConversationalRetrievalChain
 import os
 import re
 from pinecone import Pinecone, ServerlessSpec
+import pinecone  
 
 app = Flask(__name__)
 
@@ -25,14 +27,14 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 
 # Define the index name
 index_name = "bharatomr1"
-
+existing_indexes = [index_info["name"] for index_info in pc.list_indexes()]
 # Create the index if it doesn't exist
-if index_name not in pc.list_indexes().names():
+if index_name not in existing_indexes:
     pc.create_index(
         name=index_name,
-        dimension=768,
+        dimension=3072,
         metric="cosine",
-        spec=ServerlessSpec(cloud="aws", region=PINECONE_ENVIRONMENT)
+        spec=ServerlessSpec(cloud="aws", region="us-east-1"),
     )
 
 # Instantiate the index
@@ -76,8 +78,8 @@ def get_vectorstore(text_chunks, index):
     index.upsert(vectors=data)
 
     # Initialize Pinecone vector store for LangChain
-    text_field = "text"
-    vectorstore = Pinecone(index, embed.embed_query, text_field)
+
+    vectorstore = PineconeVectorStore(index=index, embedding=embed)
     return vectorstore
 
 # Handling user input with a prompt
@@ -86,16 +88,16 @@ def handle_user_input(question):
     Evaluate the following {question} based on the given context:
 
     Answer: {question}. Do not draw any inferences from the user's answer, and do not imply anything. 
-    Evaluate exactly what the user has written, considering both the correctness and completeness of the response.
-
     Please note:
     - The question may contain minor issues in the answer, so you should adjust the marks accordingly.
     - If the answer is partial, award half marks or an appropriate fraction based on the context and the provided marks system.
     - Provide clear feedback based on the answer, without adding extra explanations beyond the response given.
 
-    Provide the evaluation exactly in this format:
-    1. **Marks**: [Insert Marks Here]
-    2. **Feedback**: [Provide a 3-4 sentence evaluation of the answer, addressing the content directly. Mention any missing or incorrect parts if necessary.]
+    Here is an example of the expected output format:
+    {{
+      "Marks": "10",
+      "Feedback": "this answer is good but need some minor changes."
+    }}
     """
 
     conversation_chain = session_dict.get("conversation")
@@ -157,8 +159,8 @@ def ask_question():
     question = data["user_answer"]
     answer = handle_user_input(question)
     print(answer)
-    score_match = re.search(r"\*\*Marks\*\*:\s*([0-9]*\.?[0-9]+(?:\s*\+\s*[0-9]*\.?[0-9]+)*)", answer)
-    feedback_match = re.search(r"\*\*Feedback\*\*:\s*(.+)", answer, re.DOTALL)
+    score_match = re.search(r'"Marks":\s*"([\d\.\/]+)"', answer)
+    feedback_match = re.search(r'"Feedback":\s*"(.+?)"', answer, re.DOTALL)
 
     return jsonify({
         "Marks": score_match.group(1) if score_match else "No score found",

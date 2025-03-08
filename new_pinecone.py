@@ -22,7 +22,7 @@ PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
 pc = Pinecone(api_key=PINECONE_API_KEY)
 
 # Define the index name
-index_name = "bharatomr1"
+index_name = "demo27"
 
 # Create the index if it doesn't exist
 if index_name not in pc.list_indexes().names():
@@ -92,11 +92,11 @@ def handle_user_input(user_answer, max_marks):
     - Full marks for a complete and accurate answer.
     - Deduct marks proportionally for incomplete or partially correct answers.
     
-    evaluation strictly in this format in json format:
+    evaluation same as nothing else in this format:
     1. **Marks**: [Insert marks out of {max_marks}]
     2. **Feedback**: [Provide a 3-4 sentence evaluation of the answer.]
     """
-
+                                                                                                                                                                                                                                                                                                                                                            
     conversation_chain = session_dict.get("conversation")
     if conversation_chain:
         response = conversation_chain({"question": prompt})
